@@ -1,0 +1,43 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+/.idea
+/.vscode
+
+# Laravel (paths relative to public_html/)
+public_html/vendor/
+public_html/node_modules/
+public_html/.env
+public_html/.env.backup
+public_html/.phpunit.result.cache
+public_html/auth.json
+public_html/Homestead.json
+public_html/Homestead.yaml
+public_html/npm-debug.log
+public_html/yarn-error.log
+
+# Frontend build / UI assets (not needed for API backend)
+public_html/public/build/
+public_html/public/hot/
+public_html/public/assets/
+public_html/public/plugins/
+public_html/public/plugins-rtl/
+public_html/public/resources/
+public_html/package.json
+public_html/package-lock.json
+public_html/vite.config.js
+
+# User uploads & media (serve from disk, do not version)
+public_html/public/uploads/
+public_html/public/video_content/
+public_html/public/audio_content/
+public_html/public/instructor_photo/
+public_html/public/assessment/
+public_html/public/storage
+
+# Storage & logs
+public_html/storage/*.key
+public_html/storage/logs/*.log
+
+# Database dumps
+public_html/DB/*.sql

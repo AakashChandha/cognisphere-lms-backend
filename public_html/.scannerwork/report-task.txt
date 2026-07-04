@@ -1,0 +1,6 @@
+projectKey=lms
+serverUrl=http://localhost:9000
+serverVersion=9.9.2.77730
+dashboardUrl=http://localhost:9000/dashboard?id=lms
+ceTaskId=AYzPYdf7OUk-v0QYXfFY
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AYzPYdf7OUk-v0QYXfFY
