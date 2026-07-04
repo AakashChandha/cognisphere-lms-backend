@@ -14,7 +14,6 @@
 /storage/*.key
 /storage/logs/*.log
 /vendor
-.env
 .env.backup
 .phpunit.result.cache
 Homestead.json
@@ -25,6 +24,5 @@ yarn-error.log
 package.json
 package-lock.json
 vite.config.js
-/DB/*.sql
 /.idea
 /.vscode

@@ -7,7 +7,6 @@ Thumbs.db
 # Laravel (paths relative to public_html/)
 public_html/vendor/
 public_html/node_modules/
-public_html/.env
 public_html/.env.backup
 public_html/.phpunit.result.cache
 public_html/auth.json
@@ -40,4 +39,3 @@ public_html/storage/*.key
 public_html/storage/logs/*.log
 
 # Database dumps
-public_html/DB/*.sql
