@@ -31,6 +31,47 @@ class User extends Authenticatable
     ];
 
     /**
+     * Default attribute values for columns that may be NOT NULL in production DB.
+     */
+    protected $attributes = [
+        'phone_code' => 0,
+        'phone_number' => null,
+        'role' => '0',
+        'status' => 1,
+    ];
+
+    /**
+     * Build a complete users row for API self-registration.
+     * Matches production schema in DB dump (phone_code is int, phone_number nullable).
+     */
+    public static function attributesForRegistration(array $input): array
+    {
+        $userGroupId = $input['user_group_id']
+            ?? UserGroup::where('name', 'Learner')->value('id')
+            ?? 2;
+
+        $phoneCode = array_key_exists('phone_code', $input) && $input['phone_code'] !== ''
+            ? (int) $input['phone_code']
+            : 0;
+
+        $phoneNumber = array_key_exists('phone_number', $input) && $input['phone_number'] !== ''
+            ? (string) $input['phone_number']
+            : null;
+
+        return [
+            'name' => $input['name'],
+            'email' => $input['email'],
+            'password' => $input['password'],
+            'user_group_id' => $userGroupId,
+            'phone_code' => $phoneCode,
+            'phone_number' => $phoneNumber,
+            'role' => $input['role'] ?? null,
+            'status' => $input['status'] ?? 1,
+            'session_id' => null,
+        ];
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>
@@ -48,6 +89,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'phone_code' => 'integer',
+        'status' => 'boolean',
     ];
 
     public function courseBasicInfo()

@@ -7,40 +7,21 @@ use App\Http\Controllers\Controller as Controller;
 
 class BaseController extends Controller
 {
-    /**
-    * success response method.
-    *
-    * @return \Illuminate\Http\Response
-    */
-
-    public function sendResponse($result, $message)
+    public function sendResponse($result, string $message, int $code = 200)
     {
-    	$response = [
-
+        return response()->json([
             'success' => true,
-            'data'    => $result,
             'message' => $message,
-        ];
-        return response()->json($response, 200);
+            'data' => $result ?? (object) [],
+        ], $code);
     }
 
-    /**
-    * return error response.
-    *
-    * @return \Illuminate\Http\Response
-    */
-
-    public function sendError($error, $errorMessages = [], $code = 404)
+    public function sendError(string $message, $errorMessages = [], int $code = 400)
     {
-    	$response = [
-
+        return response()->json([
             'success' => false,
-            'message' => $error,
-        ];
-
-        if (!empty($errorMessages)) {
-            $response['data'] = $errorMessages;
-        }
-        return response()->json($response, $code);
+            'message' => $message,
+            'data' => ! empty($errorMessages) ? $errorMessages : (object) [],
+        ], $code);
     }
 }

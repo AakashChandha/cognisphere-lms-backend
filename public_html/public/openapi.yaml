@@ -29,8 +29,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
               example:
-                status: ok
+                success: true
                 message: Laravel API is working
+                data:
+                  status: ok
 
   /api/login:
     post:
@@ -60,7 +62,7 @@ paths:
                   token: "1|exampleSanctumToken"
                   name: Admin
                   user_group_id: 1
-                message: User login successfully.
+                message: Login successful.
         '401':
           description: Invalid credentials
           content:
@@ -69,9 +71,9 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 success: false
-                message: Unauthorised.
+                message: Invalid email or password.
                 data:
-                  error: Invalid email or password.
+                  error: The credentials you entered are incorrect.
 
   /api/register:
     post:
@@ -102,8 +104,8 @@ paths:
                 data:
                   token: "2|exampleSanctumToken"
                   name: John Doe
-                message: User register successfully.
-        '404':
+                message: Registration successful.
+        '422':
           description: Validation error
           content:
             application/json:
@@ -111,9 +113,19 @@ paths:
                 $ref: '#/components/schemas/ValidationErrorResponse'
               example:
                 success: false
-                message: Validation Error.
+                message: Validation failed. Please check your input.
                 data:
                   email: ["The email has already been taken."]
+        '500':
+          description: Server or database error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: We could not complete your request. Please verify your details and try again.
+                data: {}
 
 components:
   securitySchemes:
@@ -127,12 +139,18 @@ components:
     HealthResponse:
       type: object
       properties:
-        status:
-          type: string
-          example: ok
+        success:
+          type: boolean
+          example: true
         message:
           type: string
           example: Laravel API is working
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              example: ok
 
     LoginRequest:
       type: object
@@ -167,6 +185,18 @@ components:
           format: password
           description: Must match password
           example: secret123
+        user_group_id:
+          type: integer
+          description: Optional. Defaults to Learner (2) if omitted. 1=Admin, 2=Learner, 3=Instructor
+          example: 2
+        phone_code:
+          type: integer
+          description: Optional country calling code (e.g. 91 for India). Defaults to 0.
+          example: 91
+        phone_number:
+          type: string
+          description: Optional. Defaults to null if omitted.
+          example: "9876543210"
 
     AuthSuccessResponse:
       type: object
@@ -200,6 +230,8 @@ components:
               type: string
             name:
               type: string
+            user_group_id:
+              type: integer
         message:
           type: string
 
