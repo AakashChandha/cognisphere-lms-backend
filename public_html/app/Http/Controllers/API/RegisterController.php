@@ -47,78 +47,35 @@ class RegisterController extends BaseController
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
+            'name' => 'required',
+            'email' => 'required|email',
+            'password' => 'required',
             'c_password' => 'required|same:password',
-            'user_group_id' => 'nullable|exists:user_groups,id',
-            'phone_code' => 'nullable|integer',
-            'phone_number' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
-            return $this->sendError(
-                'Validation failed. Please check your input.',
-                $validator->errors(),
-                422
-            );
+            return $this->sendError('Validation Error.', $validator->errors());       
         }
 
-        try {
-            $user = User::create(User::attributesForRegistration($request->only([
-                'name',
-                'email',
-                'password',
-                'user_group_id',
-                'phone_code',
-                'phone_number',
-            ])));
-        } catch (\Throwable $e) {
-            report($e);
-
-            return $this->sendError(
-                'Registration could not be completed. Please try again later.',
-                config('app.debug') ? ['error' => $e->getMessage()] : (object) [],
-                500
-            );
-        }
-
-        $success['token'] = $user->createToken('MyApp')->plainTextToken;
-        $success['name'] = $user->name;
-        $success['user_group_id'] = $user->user_group_id;
-
-        return $this->sendResponse($success, 'Registration successful.');
+        $input = $request->all();
+        $input['password'] = bcrypt($input['password']);
+        $user = User::create($input);
+        $success['token'] =  $user->createToken('MyApp')->plainTextToken;
+        $success['name'] =  $user->name;
+        return $this->sendResponse($success, 'User register successfully.');
     }
-
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendError(
-                'Validation failed. Please check your input.',
-                $validator->errors(),
-                422
-            );
-        }
-
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
             $success['token'] = $user->createToken('MyApp')->plainTextToken;
             $success['name'] = $user->name;
             $success['user_group_id'] = $user->user_group_id;
 
-            return $this->sendResponse($success, 'Login successful.');
+            return $this->sendResponse($success, 'User login successfully.');
         }
 
-        return $this->sendError(
-            'Invalid email or password.',
-            ['error' => 'The credentials you entered are incorrect.'],
-            401
-        );
+        return $this->sendError('Unauthorised.', ['error' => 'Invalid email or password.'], 401);
     }
     public function AdminRegister(Request $request)
     {

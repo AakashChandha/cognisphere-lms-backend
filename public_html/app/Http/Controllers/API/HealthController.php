@@ -10,11 +10,8 @@ class HealthController extends Controller
     public function __invoke(): JsonResponse
     {
         return response()->json([
-            'success' => true,
+            'status' => 'ok',
             'message' => 'Laravel API is working',
-            'data' => [
-                'status' => 'ok',
-            ],
         ]);
     }
 }

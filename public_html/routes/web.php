@@ -10,13 +10,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return response()->json([
-        'success' => true,
-        'message' => 'Cognisphere LMS API is running',
-        'data' => [
-            'name' => 'Cognisphere LMS API',
-            'status' => 'ok',
-            'docs' => url('/api/documentation'),
-            'health' => url('/api/health'),
-        ],
+        'name' => 'Cognisphere LMS API',
+        'status' => 'ok',
+        'docs' => url('/api/health'),
     ]);
 });
