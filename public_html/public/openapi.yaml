@@ -1,0 +1,232 @@
+openapi: 3.0.3
+info:
+  title: Cognisphere LMS API
+  description: API documentation for the Cognisphere LMS backend.
+  version: 1.0.0
+
+servers:
+  - url: /
+    description: Current host
+
+tags:
+  - name: Health
+    description: Service health checks
+  - name: Auth
+    description: Registration and login
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Returns API status. No authentication required.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: ok
+                message: Laravel API is working
+
+  /api/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      description: Authenticate with email and password. Returns a Sanctum bearer token.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: admin@gmail.com
+              password: yourpassword
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+              example:
+                success: true
+                data:
+                  token: "1|exampleSanctumToken"
+                  name: Admin
+                  user_group_id: 1
+                message: User login successfully.
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: Unauthorised.
+                data:
+                  error: Invalid email or password.
+
+  /api/register:
+    post:
+      tags: [Auth]
+      summary: Register
+      description: Create a new user account. Returns a Sanctum bearer token on success.
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              name: John Doe
+              email: john@example.com
+              password: secret123
+              c_password: secret123
+      responses:
+        '200':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSuccessResponse'
+              example:
+                success: true
+                data:
+                  token: "2|exampleSanctumToken"
+                  name: John Doe
+                message: User register successfully.
+        '404':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                success: false
+                message: Validation Error.
+                data:
+                  email: ["The email has already been taken."]
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+      description: Use the token returned from login or register
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        message:
+          type: string
+          example: Laravel API is working
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@gmail.com
+        password:
+          type: string
+          format: password
+          example: yourpassword
+
+    RegisterRequest:
+      type: object
+      required: [name, email, password, c_password]
+      properties:
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          format: password
+          example: secret123
+        c_password:
+          type: string
+          format: password
+          description: Must match password
+          example: secret123
+
+    AuthSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+            name:
+              type: string
+            user_group_id:
+              type: integer
+              description: 1=Admin, 2=Learner, 3=Instructor
+        message:
+          type: string
+
+    RegisterSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+            name:
+              type: string
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Validation Error.
+        data:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
