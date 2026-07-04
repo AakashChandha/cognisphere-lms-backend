@@ -22,6 +22,8 @@ use App\Models\UserAccountBasicInfo;
 use App\Models\Entrollment;
 use App\Models\CourseCategory;
 use App\Models\UserGroup;
+use App\Models\UserGroupPermission;
+use App\Models\UserAccountPermission;
 use App\Models\CourseLessonBasicInfo;
 use App\Models\LeadPayment;
 
@@ -48,18 +50,20 @@ class RegisterController extends BaseController
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'email' => 'required|email',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required',
             'c_password' => 'required|same:password',
+            'user_group_id' => 'nullable|exists:user_groups,id',
+            'phone_code' => 'nullable|integer',
+            'phone_number' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());       
         }
 
-        $input = $request->all();
-        $input['password'] = bcrypt($input['password']);
-        $user = User::create($input);
+        $user = $this->createUserWithDefaults($request);
+
         $success['token'] =  $user->createToken('MyApp')->plainTextToken;
         $success['name'] =  $user->name;
         return $this->sendResponse($success, 'User register successfully.');
@@ -96,9 +100,7 @@ class RegisterController extends BaseController
             return $this->sendError('Validation Error.', $validator->errors());
         }
 
-        $input = $request->all();
-        $input['password'] = bcrypt($input['password']);
-        $user = User::create($input);
+        $user = $this->createUserWithDefaults($request);
         $success['token'] =  $user->createToken('MyApp')->plainTextToken;
         $success['name'] =  $user->name;
         return redirect()->intended('/');
@@ -332,5 +334,36 @@ class RegisterController extends BaseController
     {
         $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_';
         return substr(str_shuffle($characters), 0, $length);
+    }
+
+    private function createUserWithDefaults(Request $request, ?int $defaultUserGroupId = null): User
+    {
+        $learnerGroup = UserGroup::where('name', 'Learner')->first();
+        $userGroupId = $request->input('user_group_id', $defaultUserGroupId ?? $learnerGroup?->id ?? 2);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => $request->password,
+            'user_group_id' => $userGroupId,
+            'phone_code' => $request->input('phone_code', 0),
+            'phone_number' => $request->input('phone_number'),
+            'status' => $request->input('status', 1),
+        ]);
+
+        $groupPermissions = UserGroupPermission::where('user_group_id', $userGroupId)->first();
+
+        if ($groupPermissions) {
+            UserAccountPermission::create([
+                'user_group_id' => $userGroupId,
+                'user_id' => $user->id,
+                'create_user' => $groupPermissions->create_user,
+                'edit_user' => $groupPermissions->edit_user,
+                'view_user' => $groupPermissions->view_user,
+                'delete_user' => $groupPermissions->delete_user,
+            ]);
+        }
+
+        return $user;
     }
 }
